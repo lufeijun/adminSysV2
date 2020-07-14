@@ -11828,6 +11828,15 @@ a.text-dark:focus {
   margin-left: 150px;
 }
 
+.my-template {
+  background-color: #ffffff;
+  padding: 15px;
+}
+
+.el-col-clear {
+  clear: both;
+}
+
 /*.content {*/
 
 /*  overflow-x: auto;*/

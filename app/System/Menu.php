@@ -84,6 +84,8 @@ class Menu
         $roleIds = explode(',', $user->role);
         $data['id'] = $user->id;
         $data['name'] = $user->name;
+        $data['phone'] = $user->phone;
+        $data['address'] = $user->address;
         $data['email'] = $user->email;
         $data['image'] = $user->image;
         $data['role'] = $user->role;

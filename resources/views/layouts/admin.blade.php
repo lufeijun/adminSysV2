@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>标题</title>
   <link rel="icon" href="{{ asset('img/favicon.ico') }}" type="image/x-icon" />
-  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+  <link rel="stylesheet" href="{{ mix('css/app.css') }}">
   {{-- <link rel="stylesheet" href="{{ asset('css/2020/ionicons.min.css') }}"> --}}
   <link rel="stylesheet" href="{{ asset('css/2020/AdminLTE.min.css') }}">
   <link rel="stylesheet" href="{{ asset('css/2020/skins/skin-blue.min.css') }}">
@@ -257,7 +257,7 @@ if (!isEngineES5Compliant) {
             <div class="col-lg-6 strong-bloder">手机号</div>
             <div class="col-lg-12" style="height: 15px;"></div>
             <div class="col-lg-6">{{ App\System\Admin::getLoginedMessage('name','无') }}</div>
-            <div class="col-lg-6"><input type="number" class="form-control logined-phone-number" placeholder="请填写手机号码" value="{{ App\System\Admin::getLoginedMessage('phone_number','无') }}"></div>
+            <div class="col-lg-6"><input type="number" class="form-control logined-phone-number" placeholder="请填写手机号码" value="{{ App\System\Admin::getLoginedMessage('phone','无') }}"></div>
             <div class="col-lg-12" style="height: 15px;"></div>
             <div class="col-lg-6 strong-bloder">住址</div>
             <div class="col-lg-6 strong-bloder">微信号</div>
@@ -452,7 +452,7 @@ if (!isEngineES5Compliant) {
 
 </div>
 {{-- 引入 js --}}
-<script src="{{ asset('js/app.js') }}"></script>
+<script src="{{ mix('js/app.js') }}"></script>
 <script src="{{ asset('js/LTE.js') }}"></script>
 <script>
 API_ENDPOINT = "{{ url('') }}";

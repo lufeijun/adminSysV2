@@ -11,16 +11,6 @@ use Illuminate\Http\Request;
 
 class MemberController extends Controller
 {
-    public function list( Request $request )
-    {
-        $members = MemberUltility::getAllMembers( 'desc' ,$request->get('page',1) );
-
-        $roles = MemberUltility::getAllRoles();
-
-        return $this->apiResponse(0,'success',['members'=>$members,'roles'=>$roles]);
-    }
-
-
     public function change( Request $request )
     {
 

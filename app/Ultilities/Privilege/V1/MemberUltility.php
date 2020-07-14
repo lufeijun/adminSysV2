@@ -3,6 +3,7 @@ namespace App\Ultilities\Privilege\V1;
 
 use App\Model\Privilege\Ability;
 use App\Model\Privilege\Role;
+use App\Tools\Json;
 use App\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -54,10 +55,36 @@ class MemberUltility
      * @param int $limit 每页个数
      * @return
      */
-    public static function getAllMembers( string $orderby = 'desc' , int $page = 1 , int $limit = 30 )
+    public static function getAllMembers( $search ,int $page = 1 , string $orderby = 'desc' , int $limit = 30 )
     {
+
+
         $roles = Role::pluck('name','id');
-        $all = User::orderBy('id',$orderby)->paginate( $limit, ['*'] , 'page' , $page )->toArray();
+        $all = User::where("id","!=",0);
+
+        // 在职
+        if ( $search['enable'] != '全部' ) {
+            $all = $all->where('enable', $search['enable'] == '在职' ? 1 : 0 );
+        }
+
+        // 角色
+        if ( $search['role_id'] ) {
+            $all = $all->where('role', 'like' , '%,'. $search['role_id'] .',%' );
+        }
+
+        // 关键字
+        if ( $search['keyword'] ) {
+            $keyword = $search['keyword'];
+            $all = $all->where(function ( $query ) use( $keyword ){
+                $query->where('name', 'like' , '%'. $keyword .'%' )
+                    ->orWhere('phone', 'like' , '%'. $keyword .'%')
+                    ->orWhere('email', 'like' , '%'. $keyword .'%');
+            });
+        }
+
+        $all = $all->orderBy('id',$orderby)->paginate( $limit, ['*'] , 'page' , $page )->toArray();
+
+
 
         foreach ( $all['data']  as &$member) {
             $temp = [];
@@ -69,7 +96,7 @@ class MemberUltility
                 }
             }
             $member['enable'] = $member['enable']?'在职':'离职';
-            $member['roles'] = $temp;
+            $member['role_names'] = $temp;
         }
         unset( $member );
 
@@ -208,33 +235,86 @@ class MemberUltility
     }
 
 
-    public static function getAbilityByRoleid(  int $id )
+    /**
+     * @param int $id
+     * @param string $type 权限类型 1 菜单，2 功能
+     * @return array
+     */
+    public static function getAbilityByRoleid(  int $id , string $type )
     {
-        $result = ['action'=>[],'menu'=>[]];
-
-        $all = Ability::where('role_id',$id)->get()->groupBy('type')->toArray();
-
-        // 菜单
-        if ( isset( $all[1] ) )
-        {
-            foreach ( $all[1] as $ability  )
-            {
-                $result['menu'][] = $ability['ability'];
-            }
+        $typeInt = 0;
+        switch ( $type ) {
+            case '菜单':
+                $typeInt = 1;
+                break;
+            case '功能' :
+                $typeInt = 2;
+                break;
         }
 
 
-        // 功能
-        if ( isset( $all[2] ) )
-        {
-            foreach ( $all[2] as $ability  )
-            {
-                $result['action'][] = $ability['ability'];
-            }
-        }
+        $result = [];
 
+        $all = Ability::where('role_id',$id)->where('type',$typeInt)->get()->toArray();
+
+        foreach ( $all as $ability  )
+        {
+            $result[] = $ability['ability'];
+        }
 
         return $result;
+    }
+
+    /**
+     * @param string $type 权限类型 1 菜单，2 功能
+     * @return array
+     */
+    public static function allAbilitys( string $type)
+    {
+        $data = [];
+
+        switch ( $type ) {
+            case '菜单':
+                $data = config("custom.ability.menuTree");
+                break;
+            case '功能' :
+                $data = config("custom.ability.actionTree");
+                break;
+        }
+
+        $result = [];
+        $have = []; // 标志数组，防止重复
+        foreach ( $data as $menu )
+        {
+            $tempStr = '';
+            foreach ( explode(',',$menu) as $m )
+            {
+                $key = $tempStr . $m . ',';
+                if ( ! in_array( $key , $have ) )
+                {
+                    $result[] = [
+                        'label' => $m,
+                        'parent' => $tempStr,
+                        'key' =>  $key,
+                    ];
+                    $have[] = $key;
+                }
+                $tempStr .= $m.',';
+            }
+        }
+
+        $data = array_column($result, null, 'key');
+        // 树形结构的开始
+        $tree = [];
+        foreach ($data as $key => $val) {
+            if ($val['parent'] == '') {
+                $tree[] = &$data[$key];
+            } else {
+                $data[$val['parent']]['children'][] = &$data[$key];
+            }
+        }
+
+        return Json::arrayToJson($tree);
     }
 
 

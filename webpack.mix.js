@@ -12,6 +12,7 @@ const mix = require('laravel-mix');
  */
 
 mix.js('resources/js/app.js', 'public/js')
+    .version()
     .scripts([
         'public/js/2020/dropzone.js',
         'public/js/2020/adminLTE.min.js',

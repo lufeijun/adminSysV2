@@ -14,7 +14,8 @@
         "guzzlehttp/guzzle": "^6.3",
         "laravel/framework": "^7.0",
         "laravel/tinker": "^2.0",
-        "ramsey/uuid": "^4.0"
+        "ramsey/uuid": "^4.0",
+        "webonyx/graphql-php": "^14.0"
     },
     "require-dev": {
         "facade/ignition": "^2.0",
@@ -36,7 +37,8 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "app/"
+            "App\\": "app/",
+            "GraphApp\\": "graph_app/"
         },
         "classmap": [
             "database/seeds",

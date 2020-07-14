@@ -47,3 +47,7 @@ Route::middleware(['auth'])->namespace("Admin")->prefix("admin")->group(function
 
 
 });
+
+
+// graphql
+Route::any('graphql', 'GraphQLController@fire');

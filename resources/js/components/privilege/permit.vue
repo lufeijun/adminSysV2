@@ -58,13 +58,32 @@
         },
         methods: {
             getList: function() {
-                let api = 'api/privilege/v1/role/permit/get/' + this.id;
-                this.axios.post(api).then((response) => {
+                // let api = 'api/privilege/v1/role/permit/get/' + this.id;
+                let api = 'graphql';
+                let query = `
+                query($id: Int){
+                      privilege ( id: $id ){
+                        ability_action_tree
+                        ability_menu_tree
+                        role_msg{
+                            id
+                            name
+                            ability_action
+                            ability_menu
+                        }
+                      }
+                    }
+                `;
+                let variables = {
+                    id: this.id
+                };
+                this.axios.post(api,{query:query,variables:variables}).then((response) => {
                     if( response.data.status == 0 ) {
-                        this.menu = response.data.values.menu;
-                        this.action = response.data.values.action;
-                        this.ability = response.data.values.ability;
-                        this.name = response.data.values.role_name;
+                        this.menu = JSON.parse( response.data.values.privilege.ability_menu_tree );
+                        this.action = JSON.parse( response.data.values.privilege.ability_action_tree );
+                        this.ability.action = response.data.values.privilege.role_msg.ability_action;
+                        this.ability.menu = response.data.values.privilege.role_msg.ability_menu;
+                        this.name = response.data.values.privilege.role_msg.name;
                     } else {
                         swal("请求失败", response.data.message , "warning");
                     }

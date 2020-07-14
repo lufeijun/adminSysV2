@@ -28,7 +28,6 @@ Route::namespace('Api')->group(function (){
     Route::group(['namespace'=>'Privilege\V1','prefix'=>'privilege/v1'],function(){
         // 用户部分
         Route::group(["prefix"=>'member'],function (){
-            Route::post('list','MemberController@list');
             Route::post('add','MemberController@add');
             Route::post('change','MemberController@change');
             Route::post('msg/update/{id}','MemberController@msgUpdate');
@@ -38,9 +37,7 @@ Route::namespace('Api')->group(function (){
 
         // 角色部分
         Route::group(["prefix"=>'role'],function (){
-            Route::post('list','RoleController@list');
             Route::post('change','RoleController@change');
-            Route::post('permit/get/{id}','RoleController@permitGet');
             Route::post('permit/update/{id}','RoleController@permitUpdate');
         });
 

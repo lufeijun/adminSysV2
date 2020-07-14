@@ -28,7 +28,7 @@
             角色 请选择该成员担任的角色
         </div>
         <div class="col-lg-12" id="add-role" style="margin: 10px 0;">
-            <el-checkbox-group v-model="member.roles">
+            <el-checkbox-group v-model="member.role_names">
                 <div class="col-lg-2" v-for="(role,index) in roles" style="display: inline;">
                     <label class="checkbox-inline">
                         <el-checkbox v-bind:role-name="role.name" :label="role.name" v-bind:role-id="role.id" class="role-class" >{{ role.name }}</el-checkbox>

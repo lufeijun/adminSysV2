@@ -3704,11 +3704,59 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "memberList",
   data: function data() {
     return {
       name: "测试",
+      is_first_flag: true,
       theMember: null,
       total: 0,
       perPage: 0,
@@ -3716,24 +3764,52 @@ __webpack_require__.r(__webpack_exports__);
       loading: true,
       dialogFormVisible: false,
       list: [],
-      roles: []
+      roles: [],
+      search: {
+        keyword: "",
+        enable: "全部",
+        role_id: ''
+      }
     };
   },
   methods: {
     getList: function getList(page) {
       var _this = this;
 
-      var api = 'api/privilege/v1/member/list';
+      var api = 'graphql';
+      var query = '';
+
+      if (this.is_first_flag) {
+        query = "\n                    query($page:Int,$search: PrivilegeSearch){\n                      privilege( page: $page ,search: $search){\n                        role_list{\n                            id\n                            name\n                        }\n                        user_list{\n                          current_page\n                          per_page\n                          total\n                          data {\n                            id\n                            name\n                            email\n                            phone\n                            address\n                            enable\n                            role\n                            role_names\n                          }\n                        }\n                      }\n                    }\n\n                ";
+      } else {
+        query = "\n                    query($page:Int,$search: PrivilegeSearch){\n                      privilege( page: $page , search: $search ){\n                        user_list{\n                          current_page\n                          per_page\n                          total\n                          data {\n                            id\n                            name\n                            email\n                            phone\n                            address\n                            enable\n                            role\n                            role_names\n                          }\n                        }\n                      }\n                    }\n\n                ";
+      }
+
+      var variables = {
+        page: page,
+        search: this.search
+      };
       this.axios.post(api, {
-        page: page
+        query: query,
+        variables: variables
       }).then(function (response) {
         if (response.data.status == 0) {
-          var members = response.data.values.members;
+          var members = response.data.values.privilege.user_list;
           _this.list = members.data;
           _this.total = members.total;
           _this.perPage = members.per_page;
-          _this.currentPage = members.from;
-          _this.roles = response.data.values.roles;
+          _this.currentPage = members.current_page;
+
+          if (_this.is_first_flag) {
+            _this.roles = response.data.values.privilege.role_list;
+
+            _this.roles.splice(0, 0, {
+              id: '',
+              name: "全部"
+            });
+          } else {
+            _this.is_first_flag = false;
+          }
         } else {
           swal("请求失败", response.data.message, "warning");
         }
@@ -3755,11 +3831,14 @@ __webpack_require__.r(__webpack_exports__);
         email: '',
         enable: '',
         role: '',
-        roles: []
+        role_names: []
       }));
     },
     handleCurrentChange: function handleCurrentChange(page) {
       this.getList(page);
+    },
+    dealSearch: function dealSearch() {
+      this.getList(1);
     },
     save: function save() {
       var _this2 = this;
@@ -3910,13 +3989,22 @@ __webpack_require__.r(__webpack_exports__);
     getList: function getList() {
       var _this = this;
 
-      var api = 'api/privilege/v1/role/permit/get/' + this.id;
-      this.axios.post(api).then(function (response) {
+      // let api = 'api/privilege/v1/role/permit/get/' + this.id;
+      var api = 'graphql';
+      var query = "\n            query($id: Int){\n                  privilege ( id: $id ){\n                    ability_action_tree\n                    ability_menu_tree\n                    role_msg{\n                        id\n                        name\n                        ability_action\n                        ability_menu\n                    }\n                  }\n                }\n            ";
+      var variables = {
+        id: this.id
+      };
+      this.axios.post(api, {
+        query: query,
+        variables: variables
+      }).then(function (response) {
         if (response.data.status == 0) {
-          _this.menu = response.data.values.menu;
-          _this.action = response.data.values.action;
-          _this.ability = response.data.values.ability;
-          _this.name = response.data.values.role_name;
+          _this.menu = JSON.parse(response.data.values.privilege.ability_menu_tree);
+          _this.action = JSON.parse(response.data.values.privilege.ability_action_tree);
+          _this.ability.action = response.data.values.privilege.role_msg.ability_action;
+          _this.ability.menu = response.data.values.privilege.role_msg.ability_menu;
+          _this.name = response.data.values.privilege.role_msg.name;
         } else {
           swal("请求失败", response.data.message, "warning");
         }
@@ -4029,10 +4117,13 @@ __webpack_require__.r(__webpack_exports__);
     getList: function getList() {
       var _this = this;
 
-      var api = 'api/privilege/v1/role/list';
-      this.axios.post(api).then(function (response) {
+      var api = 'graphql';
+      var query = "\n                query{\n                  privilege {\n                    role_list{\n                        id\n                        name\n                    }\n                  }\n                }\n            ";
+      this.axios.post(api, {
+        query: query
+      }).then(function (response) {
         if (response.data.status == 0) {
-          _this.roles = response.data.values.roles;
+          _this.roles = response.data.values.privilege.role_list;
         } else {
           swal("请求失败", response.data.message, "warning");
         }
@@ -10456,7 +10547,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "\n.block[data-v-6a67337e] {\n    margin-top: 20px;\n    float: right;\n}\n", ""]);
+exports.push([module.i, "\n.block[data-v-6a67337e] {\n    margin-top: 20px;\n    float: right;\n}\n.title[data-v-6a67337e] {\n    background-color: #f4f4f4;\n    line-height: 40px;\n    border-radius: 5px;\n    text-align: center;\n}\n.title-content[data-v-6a67337e] {\n    line-height: 40px;\n    display: inline-block;\n    padding: 0 15px;\n}\n", ""]);
 
 // exports
 
@@ -100905,11 +100996,11 @@ var render = function() {
             "el-checkbox-group",
             {
               model: {
-                value: _vm.member.roles,
+                value: _vm.member.role_names,
                 callback: function($$v) {
-                  _vm.$set(_vm.member, "roles", $$v)
+                  _vm.$set(_vm.member, "role_names", $$v)
                 },
-                expression: "member.roles"
+                expression: "member.role_names"
               }
             },
             _vm._l(_vm.roles, function(role, index) {
@@ -100976,25 +101067,154 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "div",
+    { staticClass: "my-template" },
     [
       _c(
-        "div",
-        {
-          staticClass: "col-lg-21 text-right",
-          staticStyle: { "margin-bottom": "15px" }
-        },
+        "el-row",
+        { staticClass: "filter", staticStyle: { "margin-bottom": "20px" } },
         [
+          _c("el-col", { staticClass: "title", attrs: { span: 4 } }, [
+            _vm._v("\n            在职状态\n        ")
+          ]),
+          _vm._v(" "),
           _c(
-            "el-button",
-            {
-              attrs: { type: "primary" },
-              on: {
-                click: function($event) {
-                  return _vm.handleAdd()
+            "el-col",
+            { staticClass: "title-content", attrs: { span: 8 } },
+            [
+              _c(
+                "el-select",
+                {
+                  staticStyle: { width: "100%" },
+                  attrs: { placeholder: "请选择" },
+                  model: {
+                    value: _vm.search.enable,
+                    callback: function($$v) {
+                      _vm.$set(_vm.search, "enable", $$v)
+                    },
+                    expression: "search.enable"
+                  }
+                },
+                _vm._l(["全部", "在职", "离职"], function(item) {
+                  return _c(
+                    "el-option",
+                    { key: item, attrs: { value: item, label: item } },
+                    [
+                      _vm._v(
+                        "\n                    " +
+                          _vm._s(item) +
+                          "\n                "
+                      )
+                    ]
+                  )
+                }),
+                1
+              )
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c("el-col", { staticClass: "title", attrs: { span: 4 } }, [
+            _vm._v("\n            角色\n        ")
+          ]),
+          _vm._v(" "),
+          _c(
+            "el-col",
+            { staticClass: "title-content", attrs: { span: 8 } },
+            [
+              _c(
+                "el-select",
+                {
+                  staticStyle: { width: "100%" },
+                  attrs: { placeholder: "请选择" },
+                  model: {
+                    value: _vm.search.role_id,
+                    callback: function($$v) {
+                      _vm.$set(_vm.search, "role_id", $$v)
+                    },
+                    expression: "search.role_id"
+                  }
+                },
+                _vm._l(_vm.roles, function(item) {
+                  return _c(
+                    "el-option",
+                    {
+                      key: item.id,
+                      attrs: { value: item.id, label: item.name }
+                    },
+                    [
+                      _vm._v(
+                        "\n                    " +
+                          _vm._s(item.name) +
+                          "\n                "
+                      )
+                    ]
+                  )
+                }),
+                1
+              )
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c("el-col", { staticClass: "el-col-clear", attrs: { span: 24 } }),
+          _vm._v(" "),
+          _c("el-col", { staticClass: "title", attrs: { span: 4 } }, [
+            _vm._v("\n            关键字\n        ")
+          ]),
+          _vm._v(" "),
+          _c(
+            "el-col",
+            { staticClass: "title-content", attrs: { span: 8 } },
+            [
+              _c("el-input", {
+                attrs: { placeholder: "姓名、手机号、邮箱" },
+                model: {
+                  value: _vm.search.keyword,
+                  callback: function($$v) {
+                    _vm.$set(_vm.search, "keyword", $$v)
+                  },
+                  expression: "search.keyword"
                 }
-              }
+              })
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "el-col",
+            {
+              staticClass: "title-content",
+              staticStyle: { "text-align": "right" },
+              attrs: { span: 12 }
             },
-            [_vm._v("添 加")]
+            [
+              _c(
+                "el-button",
+                {
+                  attrs: { type: "primary" },
+                  on: {
+                    click: function($event) {
+                      return _vm.dealSearch()
+                    }
+                  }
+                },
+                [_vm._v("搜 索")]
+              ),
+              _vm._v(" "),
+              _c(
+                "el-button",
+                {
+                  attrs: { type: "primary" },
+                  on: {
+                    click: function($event) {
+                      return _vm.handleAdd()
+                    }
+                  }
+                },
+                [_vm._v("添 加")]
+              )
+            ],
+            1
           )
         ],
         1
@@ -101011,10 +101231,12 @@ var render = function() {
             attrs: { prop: "name", label: "姓名", width: "100" }
           }),
           _vm._v(" "),
-          _c("el-table-column", { attrs: { prop: "email", label: "邮箱" } }),
+          _c("el-table-column", {
+            attrs: { prop: "email", label: "邮箱", width: "250" }
+          }),
           _vm._v(" "),
           _c("el-table-column", {
-            attrs: { label: "角色" },
+            attrs: { label: "角色", width: "250" },
             scopedSlots: _vm._u([
               {
                 key: "default",
@@ -101022,7 +101244,7 @@ var render = function() {
                   return [
                     _vm._v(
                       "\n                " +
-                        _vm._s(scope.row.roles.join("，")) +
+                        _vm._s(scope.row.role_names.join("，")) +
                         "\n            "
                     )
                   ]
@@ -101031,12 +101253,16 @@ var render = function() {
             ])
           }),
           _vm._v(" "),
-          _c("el-table-column", { attrs: { prop: "phone", label: "手机号" } }),
-          _vm._v(" "),
-          _c("el-table-column", { attrs: { prop: "enable", label: "状态" } }),
+          _c("el-table-column", {
+            attrs: { prop: "phone", label: "手机号", width: "120" }
+          }),
           _vm._v(" "),
           _c("el-table-column", {
-            attrs: { label: "操作" },
+            attrs: { prop: "enable", label: "状态", width: "150" }
+          }),
+          _vm._v(" "),
+          _c("el-table-column", {
+            attrs: { label: "操作", width: "95" },
             scopedSlots: _vm._u([
               {
                 key: "default",
@@ -101071,7 +101297,7 @@ var render = function() {
             attrs: {
               "current-page": _vm.currentPage,
               "page-size": _vm.perPage,
-              layout: "prev, pager, next, jumper",
+              layout: "total ,prev, pager, next, jumper",
               total: _vm.total
             },
             on: {
@@ -113609,7 +113835,7 @@ window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.
 
 
 
-axios__WEBPACK_IMPORTED_MODULE_1___default.a.defaults.baseURL = 'http://127.0.0.1:8000';
+axios__WEBPACK_IMPORTED_MODULE_1___default.a.defaults.baseURL = '/';
 Vue.use(vue_axios__WEBPACK_IMPORTED_MODULE_2___default.a, axios__WEBPACK_IMPORTED_MODULE_1___default.a);
 Vue.use(element_ui__WEBPACK_IMPORTED_MODULE_0___default.a);
 /**
@@ -114281,8 +114507,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /Users/lufeijun1234 1/Documents/soft/frame/laravel/laravel7/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /Users/lufeijun1234 1/Documents/soft/frame/laravel/laravel7/resources/sass/app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! /Users/lufeijun1234 1/Documents/soft/frame/laravel/admin/laravel/resources/js/app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! /Users/lufeijun1234 1/Documents/soft/frame/laravel/admin/laravel/resources/sass/app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

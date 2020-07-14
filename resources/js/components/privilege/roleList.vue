@@ -63,10 +63,20 @@
         },
         methods: {
             getList: function() {
-                let api = 'api/privilege/v1/role/list';
-                this.axios.post(api).then((response) => {
+                let api = 'graphql';
+                let query = `
+                    query{
+                      privilege {
+                        role_list{
+                            id
+                            name
+                        }
+                      }
+                    }
+                `;
+                this.axios.post(api,{query:query}).then((response) => {
                     if( response.data.status == 0 ) {
-                        this.roles = response.data.values.roles;
+                        this.roles = response.data.values.privilege.role_list;
                     } else {
                         swal("请求失败", response.data.message , "warning");
                     }
