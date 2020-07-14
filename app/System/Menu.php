@@ -55,6 +55,19 @@ class Menu
         return $enable;
     }
 
+
+    public static function checkActionGranted($action,$enableJump = false)
+    {
+        $action .= ',';
+        $menuArr = Admin::getLoginedMessage('action_granted',[]);
+        $enable = in_array($action, $menuArr);
+        if ($enableJump && ! $enable) {
+            throw new \App\Exceptions\PrivilegeException("无操作权限");
+        }
+        return $enable;
+    }
+
+
     /**
      * 判断是否为当前URL，用来控制是否选中左侧材料栏
      * @param $url

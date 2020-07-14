@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\Hash;
+use App\System\Menu;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,16 +13,8 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('fuck', function () {
-//    echo App\System\Admin::getLoginedMessage('id');
-
-
-    echo Hash::make( '111222333' );
-
-
-
-    var_dump( password_verify('111222333' , '$2y$10$VWRqpM/39NVFW1cKXkhpyuoitbvONcZyXSri9dAfOh2PdW6IkbViK') );
+Route::get('/fuck', function () {
+    Menu::checkActionGranted('一级,二级,功能一',true);
 
 });
 Route::get('/', function () {
@@ -51,3 +43,11 @@ Route::middleware(['auth'])->namespace("Admin")->prefix("admin")->group(function
 
 // graphql
 Route::any('graphql', 'GraphQLController@fire');
+
+
+Route::get('no-privilege', function () {
+    return view('errors.privilege');
+});
+Route::get('not-found', function () {
+    return view('errors.notFound');
+});

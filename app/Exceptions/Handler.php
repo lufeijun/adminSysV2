@@ -50,6 +50,19 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
+        if ( $exception instanceof \App\Exceptions\PrivilegeException ) {
+            if( $request->expectsJson()){
+                return response()->json(['status' => 403, 'message'=>'无操作权限'], 200, [], JSON_UNESCAPED_UNICODE);
+            } else {
+                return redirect('no-privilege');
+            }
+        }
+
+        if ( $exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException ) {
+            return redirect('not-found');
+        }
+
+
         return parent::render($request, $exception);
     }
 }
