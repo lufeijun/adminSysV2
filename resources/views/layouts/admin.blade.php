@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>标题</title>
+  <title>{{ $pagename  }}</title>
   <link rel="icon" href="{{ asset('img/favicon.ico') }}" type="image/x-icon" />
   <link rel="stylesheet" href="{{ mix('css/app.css') }}">
   {{-- <link rel="stylesheet" href="{{ asset('css/2020/ionicons.min.css') }}"> --}}

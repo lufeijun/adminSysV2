@@ -3,6 +3,7 @@ namespace App\System;
 
 
 use App\Ultilities\Privilege\V1\MemberUltility;
+use Config;
 
 /**
  *
@@ -166,6 +167,66 @@ class Menu
         session(['administrator.menu_first_granted'=>$firstGrantedInOrder]);
     }
 
+
+    public static function getHtmlTitle()
+    {
+       $notIn = [
+            'login',
+            'admin',
+            'admin/add',
+            'soft-versions',
+            'customer/map',
+        ];
+        $title = '';
+
+        $first = $second = $third = env('APP_NAME');
+
+        $url = \Request::path();
+
+        // 登录和登录之后的首页
+        if ( in_array( $url ,  $notIn ) ) {
+            return ;
+        }
+
+        $urlArr = explode("/", $url );
+
+        // 如果不是 admin 开头的，不处理
+        if ( $urlArr[0] != 'admin' ) {
+            return ;
+        }
+
+        // 一级菜单
+        if ( isset( Config::get('custom.menu.first')[$urlArr[1]] ) ) {
+            $first = Config::get('custom.menu.first')[$urlArr[1]];
+        }
+
+
+        $menus = Config::get('custom.menu.menu');
+
+        if ( isset( $menus[$first] ) ) {
+
+            // 二级菜单
+            foreach ( $menus[$first] as $secondName => $secondMenu ) {
+
+                // 三级菜单
+                foreach ($secondMenu['threeMenu'] as $threeMenu) {
+
+                    foreach ($threeMenu['current'] as $current) {
+                        if ( strpos($url,$current) !== false ) {
+                            $second = $secondName;
+                            $third  = $threeMenu['name'];
+                            break 2;
+                        }
+                    }
+                }
+
+            }
+        }
+
+        $final = $first . '_' . $second . '_' . $third . '_';
+        return $final;
+
+    }
 
 }
 

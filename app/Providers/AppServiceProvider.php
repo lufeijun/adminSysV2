@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\System\Menu;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
                 $query->bindings
             );
         });
+
+        \View::share('pagename', Menu::getHtmlTitle());
     }
 
     /**
