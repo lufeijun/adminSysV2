@@ -41,6 +41,9 @@ class PrivilegeQueryField
                         'description' => '角色信息',
                         'type' => \GraphApp\Types\Privilege\RoleType::getInstance(),
                         'resolve' => function ($root, $cell, AppContext $context) {
+		                        if(!isset($context->allArgs['id'])){
+		                        	  \GraphApp\AppContext::apiResponse(4, '[id]字段为必填项');
+		                        }
                             return MemberUltility::getRoleByid( $context->allArgs['id'] );
                         }
                     ],

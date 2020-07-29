@@ -16,7 +16,7 @@ class FenyeListType extends BaseType
         }
         $config = [
             'description' => '分页类型数据',
-            'name' => 'FenyeList'. get_class( $obj ) ,
+            'name' => 'FenyeList'. str_replace('\\','_',get_class( $obj )) ,
             'fields' => function()use($obj) {
                 return [
                     'current_page' => [

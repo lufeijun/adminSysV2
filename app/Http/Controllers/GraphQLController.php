@@ -65,7 +65,7 @@ class GraphQLController extends Controller
         try {
             $schema = new Schema([
                 'query' => AppObjectType::query(Routes::queries()),
-                'mutation' => AppObjectType::mutation(Routes::mutations()),
+                // 'mutation' => AppObjectType::mutation(Routes::mutations()),
             ]);
 
             $result = GraphQL::executeQuery(
@@ -85,7 +85,7 @@ class GraphQLController extends Controller
                 if ( get_class( $error ) == \GraphQL\Error\Error::class ) {
                     $shuldOutErrorMsg = true;
                     // error 是 GraphQL\Error\Error ，但是这个错误是由于业务部分代码触发的，所以需要获取 getPrevious( 异常链中的前一个异常 )
-                    if ( $error->getPrevious() &&  ! in_array( get_class( $error->getPrevious() ) , $this->exceptionsNotThrow ) ) {
+                    if ( $error->getPrevious() ) {
                         if ( $debug ) {
                             $error = $error->getPrevious();
                         } else {
@@ -114,15 +114,22 @@ class GraphQLController extends Controller
                 }
             }
 
+        } catch (\Exception $e) {
+		        if ( in_array( get_class( $e ) , $this->exceptionsNotThrow )  ) {
+				        $returnStatus = 4;
+				        $returnMessage = $e->getMessage();
+		        } else if ( ! $debug ) {
+			          throw $e;
+		        }
+	
         } catch (\Error $e) {
-            $returnStatus = 4;
-            $errorMsg = $e->getTrace();
-            array_unshift( $errorMsg , ['error'=>$e->getMessage(),'file'=> $e->getFile(),'code'=>$e->getLine()]);
-            $returnMessage = $debug ? $errorMsg : 'Error';
-
             // 如果 debug = flase ，表示为线上环境，直接抛出异常，
             if ( ! $debug ) {
                 throw $e;
+            } else {
+		            $returnStatus = 4;
+		            $errorMsg = $e->getMessage();
+		            $returnMessage = $debug ? $errorMsg : 'Error';
             }
         }
 
@@ -131,7 +138,23 @@ class GraphQLController extends Controller
             $output['queries'] = \DB::getQueryLog();
             // $output['session_lifetime'] = \Redis::ttl('laravel:'.session()->getId());
         }
-
+	
+	
+		    if ( env('APP_ENV') == 'server') {
+			      unset( $output['__schema'] );
+		    }
+	
+	
+	
+		    if (array_key_exists('__schema', $output)) {
+				    $returnArray = ['status' => $returnStatus, 'message'=>$returnMessage ,'values' => $output];
+				    $returnArray['data'] = $output;
+				
+				    return response()->json($returnArray, 200, [], JSON_UNESCAPED_UNICODE);
+		    } else {
+			      return $this->apiResponse($returnStatus, $returnMessage, $output);
+		    }
+        
 
         return $this->apiResponse($returnStatus, $returnMessage, $output);
     }
